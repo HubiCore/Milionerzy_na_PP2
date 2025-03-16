@@ -2,5 +2,5 @@
 Giera na PP2
 
 
-[prawa_autorskie](https://github.com/user-attachments/assets/015082a9-6d73-4491-9f6e-6bcec99ca3d2)
+[udokumentowane](https://github.com/Barabol/podstawy-programowania/assets/105214028/8c21030f-1743-474b-9f0c-2a0b3840aa9d) 
 
