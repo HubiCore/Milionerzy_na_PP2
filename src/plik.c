@@ -6,7 +6,43 @@
 #include <ctype.h> //toupper
 typedef char string[256];
 
-
+//glowne menu
+//zwraca 0 -> tryb normalny
+//zwraca 1 -> tryb nieskonczony
+//zwraca 2 -> wychodzisz z gry
+int main_menu(){
+    printf("1.Start\n");
+    printf("2.Tabela wynikow\n");
+    printf("3.Autorzy\n");
+    printf("4.Wyjscie\n");
+    while (1){
+        int odpowiedz, odpowiedz2;
+        scanf("%d", &odpowiedz);
+        switch(odpowiedz)
+        {
+            case 1:
+                printf("1.Normalny\n");
+                printf("2.Nieskonczony\n");
+                scanf("%d", &odpowiedz2);
+                if (odpowiedz2 == 1){
+                    return 0;
+                }
+                else{
+                    return 1;
+                }
+                break;
+            case 2:
+                printf("tabela");
+                break;
+            case 3:
+                printf("Wiktor Wieczorek\nHubert Wilczynski\nHubert Stojek\n");
+                break;
+            case 4:
+                return 2;
+                break;
+        }
+    }
+}
 typedef struct possibility{ //Treść pytania, 4 odpowiedzi, poprawna odpowiedź i czy pytanie się pojawiło
         string question;
         string answers[4];
@@ -42,7 +78,7 @@ Node* createNode(possibility qac) {
         exit(1);
     }
     newNode->qac = qac;
-    newNode->next = newNode; // Wskazuje na siebie, tworząc cykl
+    newNode->next = newNode;
     return newNode;
 }
 
@@ -61,6 +97,7 @@ void insert(Node** head, possibility qac) {
     }
 }
 //funkcja bierze liste, losuje losowy element i zwraca
+//TODO: jeżeli funkcja została użyta to skipuje pytanie lub je usuwa
 possibility lets_go_gambling(Node* head){
     if (head == NULL){
         printf("Lista jest pusta \n");
@@ -102,11 +139,8 @@ void deleteNode(Node** head, string key) {
     } while (temp != *head);
 
     if (strcmp(temp->qac.question, key) != 0) return;
-
     prev->next = temp->next;
-
     if (*head == temp) *head = prev->next;
-
     free(temp);
 }
 //Funkcja czyszcząca liste
@@ -118,6 +152,7 @@ void freeList(Node* head) {
         free(temp);
     }
 }
+//kolo ratunkowe 50 na 50
 void fiftyFifty(char correctAnswer, string answers[4]) {
     int wrongIndices[3];
     int wrongCount = 0;
@@ -176,28 +211,56 @@ int main() {
     printf("==============================\n");
     printf("    WITAJ W GRZE MILIONERZY!   \n");
     printf("==============================\n\n");
-    char playerAnswer;
-    possibility skibidi_toilet;
-    skibidi_toilet = lets_go_gambling(head);
-    wypisz_poss(skibidi_toilet);
-    printf("Podaj odpowiedź (A B C D) lub użyj koła ratunkowego (% -> 50/50 lub P -> pytanie do publiczności)\n");
-    while (1){
-    scanf(" %c", &playerAnswer);
-    if (playerAnswer == '%'){
-            fiftyFifty(skibidi_toilet.correctAnswer, skibidi_toilet.answers);
-        }else if (playerAnswer == 'P'){
-            printf("tutaj inne kolo ratunkowe\n");
-        }else{
 
-            if (toupper(playerAnswer) == skibidi_toilet.correctAnswer) {
-                printf("Brawo! To poprawna odpowiedz!\n\n");
-                break;
-            } else {
-                printf("Niestety, to bledna odpowiedz. Prawidlowa odpowiedz to: %c\n\n", skibidi_toilet.correctAnswer);
-                break;
-                }
+    char playerAnswer;
+    string player_name;
+    possibility skibidi_toilet;
+    int i = 0, m_m, wynik;
+    int life = 1;
+    m_m = main_menu();
+    if (m_m == 2){
+        printf("Do zobaczenia !!!\n");
+        return 0;
+    }
+    printf("Podaj twoje imie:\n");
+    scanf(" %s", &player_name);
+    printf("\n\n\n\n\n");
+    while(1){
+        if (life == 0){
+            printf("Przegrałes :c");
+            return 0;
+        }
+        if (m_m == 0 && i > 15){
+            printf("==============================\n");
+            printf("    WYGRAŁEŚ MILION ZŁOTYCH   \n");
+            printf("==============================\n\n");
+            return 0;
+        }
+        skibidi_toilet = lets_go_gambling(head);
+        wypisz_poss(skibidi_toilet);
+        printf("Podaj odpowiedź (A B C D) lub użyj koła ratunkowego (% -> 50/50 lub P -> pytanie do publiczności)\n");
+        while (1){
+            scanf(" %c", &playerAnswer);
+            if (playerAnswer == 'q'){
+                return 0;
             }
+            if (playerAnswer == '%'){
+                    fiftyFifty(skibidi_toilet.correctAnswer, skibidi_toilet.answers);
+                }else if (playerAnswer == 'P'){
+                    printf("tutaj inne kolo ratunkowe\n");
+                }else{
+
+                    if (toupper(playerAnswer) == skibidi_toilet.correctAnswer) {
+                        printf("Brawo! To poprawna odpowiedz!\n\n");
+                        break;
+                    } else {
+                        printf("Niestety, to bledna odpowiedz. Prawidlowa odpowiedz to: %c\n\n", skibidi_toilet.correctAnswer);
+                        life--;
+                        break;
+                        }
+                    }
+        }
+    i++;
     }
     return 0;
 }
-
