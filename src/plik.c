@@ -4,6 +4,7 @@
 #include <stdbool.h> //bool
 #include <string.h>
 #include <ctype.h> //toupper
+#include "kola_ratunkowe.h"
 typedef char string[256];
 
 //glowne menu
@@ -96,6 +97,46 @@ void insert(Node** head, possibility qac) {
         newNode->next = *head;
     }
 }
+//losowanie z pliku
+int loadQuestionsFromFile(const char* filename, Node** head) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Nie mozna otworzyc pliku z pytaniami!\n");
+        return 1; // Error opening file
+    }
+
+    possibility zapisywanie;
+    int validAnswers;
+
+    while (fgets(zapisywanie.question, sizeof(zapisywanie.question), file)) {
+        // Skip empty lines
+        if (zapisywanie.question[0] == '\n' || zapisywanie.question[0] == '\r') continue;
+
+        validAnswers = 1;
+        for (int i = 0; i < 4; i++) {
+            if (fgets(zapisywanie.answers[i], sizeof(zapisywanie.answers[i]), file) == NULL || zapisywanie.answers[i][0] == '\n') {
+                printf("Problem z odpowiedziami\n");
+                validAnswers = 0;
+                break;
+            }
+        }
+
+        if (fscanf(file, " %c", &zapisywanie.correctAnswer) != 1) {
+            printf("Blad podczas wczytywania poprawnej odpowiedzi!\n");
+            fclose(file);
+            return 1; // Error reading correct answer
+        }
+
+        fgetc(file);  // To consume the newline character after the correct answer
+        if (!validAnswers) break;
+        fgetc(file);  // To consume any extra newline character after answers
+
+        insert(head, zapisywanie); // Insert the question into the linked list
+    }
+
+    fclose(file); // Close the file
+    return 0; // Success
+}
 //funkcja bierze liste, losuje losowy element i zwraca
 //TODO: jeżeli funkcja została użyta to skipuje pytanie lub je usuwa
 possibility lets_go_gambling(Node* head){
@@ -152,62 +193,21 @@ void freeList(Node* head) {
         free(temp);
     }
 }
-//kolo ratunkowe 50 na 50
-void fiftyFifty(char correctAnswer, string answers[4]) {
-    int wrongIndices[3];
-    int wrongCount = 0;
 
-    for (int i = 0; i < 4; i++) {
-        if (answers[i][0] != correctAnswer) {
-            wrongIndices[wrongCount++] = i;
-        }
-    }
-
-    srand(time(NULL));
-    int keepWrongIndex = wrongIndices[rand() % wrongCount];
-
-    printf("Pozostaja odpowiedzi:\n");
-    for (int i = 0; i < 4; i++) {
-        if (answers[i][0] == correctAnswer || i == keepWrongIndex) {
-            printf("%s", answers[i]);
-        }
-    }
-}
 int main() {
     int questionNumber = 0;
     srand(time(NULL));
-    FILE *file = fopen("pytania_bhp.txt", "r");
-    if (file == NULL) {
-        printf("Nie mozna otworzyc pliku z pytaniami!\n");
+    Node* head = NULL;
+    int result = loadQuestionsFromFile("pytania_bhp.txt", &head);
+
+    if (result != 0) {
         return 1;
     }
-    possibility zapisywanie;
-    Node* head = NULL;
-    while (fgets(zapisywanie.question, sizeof(zapisywanie.question), file)) {
-        // Pomijanie pustych linii
-        if (zapisywanie.question[0] == '\n' || zapisywanie.question[0] == '\r') continue;
+    result = loadQuestionsFromFile("pytania_psk.txt", &head);
 
-        // Wczytywanie odpowiedzi
-        int validAnswers = 1;
-        for (int i = 0; i < 4; i++) {
-            if (fgets(zapisywanie.answers[i], sizeof(zapisywanie.answers[i]), file) == NULL || zapisywanie.answers[i][0] == '\n') {
-                printf("Problem z odpowiedziami");
-                validAnswers = 0;
-                break;
-            }
-        }
-        if (fscanf(file, " %c", &zapisywanie.correctAnswer) != 1) {
-            printf("%d\n", zapisywanie.correctAnswer);
-            printf("Blad podczas wczytywania poprawnej odpowiedzi!\n");
-            fclose(file);
-            return 1;
-        }
-        fgetc(file);
-        if (!validAnswers) break;
-        fgetc(file);
-        insert(&head, zapisywanie);
+    if (result != 0) {
+        return 1;
     }
-    fclose(file);
     printf("==============================\n");
     printf("    WITAJ W GRZE MILIONERZY!   \n");
     printf("==============================\n\n");
