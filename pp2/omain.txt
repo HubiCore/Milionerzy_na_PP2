@@ -1,0 +1,127 @@
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_image.h>
+#include <stdio.h>
+#include <windows.h>
+//int wyswietl_leaderboard(int tryb); // Zakładamy, że ta funkcja istnieje gdzieś w Twoim projekcie
+
+#define SCREEN_W 800
+#define SCREEN_H 600
+
+typedef enum {
+    MENU_NORMALNY,
+    MENU_NIESKONCZONY,
+    MENU_WYJSCIE
+} MenuResult;
+
+int main_menu() {
+    al_init();
+    al_install_keyboard();
+    al_install_mouse();
+    al_init_font_addon();
+    al_init_ttf_addon();
+    al_init_image_addon();
+
+    ALLEGRO_DISPLAY* display = al_create_display(SCREEN_W, SCREEN_H);
+    ALLEGRO_FONT* font = al_load_ttf_font("arial.ttf", 24, 0);
+    ALLEGRO_BITMAP* autor1 = al_load_bitmap("autor1.png");
+    ALLEGRO_BITMAP* autor2 = al_load_bitmap("autor2.png");
+    ALLEGRO_BITMAP* autor3 = al_load_bitmap("autor3.png");
+    ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+    ALLEGRO_EVENT event;
+
+    al_register_event_source(queue, al_get_keyboard_event_source());
+
+    int selected = 0;
+    const char* options[] = { "Start", "Tabela wynikow", "Autorzy", "Wyjscie" };
+    int option_count = 4;
+
+    while (1) {
+        al_clear_to_color(al_map_rgb(0, 0, 0));
+
+        for (int i = 0; i < option_count; i++) {
+            al_draw_text(font, i == selected ? al_map_rgb(255, 0, 0) : al_map_rgb(255, 255, 255),
+                         SCREEN_W / 2, 150 + i * 50, ALLEGRO_ALIGN_CENTER, options[i]);
+        }
+
+        al_flip_display();
+        al_wait_for_event(queue, &event);
+
+        if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+            switch (event.keyboard.keycode) {
+                case ALLEGRO_KEY_UP:
+                    selected = (selected - 1 + option_count) % option_count;
+                    break;
+                case ALLEGRO_KEY_DOWN:
+                    selected = (selected + 1) % option_count;
+                    break;
+                case ALLEGRO_KEY_ENTER:
+                    switch (selected) {
+                        case 0: { // Start
+                            int mode = 0;
+                            const char* modes[] = { "Normalny", "Nieskonczony" };
+                            int mode_selected = 0;
+                            while (1) {
+                                al_clear_to_color(al_map_rgb(0, 0, 0));
+                                for (int i = 0; i < 2; i++) {
+                                    al_draw_text(font, i == mode_selected ? al_map_rgb(0, 255, 0) : al_map_rgb(255, 255, 255),
+                                                 SCREEN_W / 2, 200 + i * 50, ALLEGRO_ALIGN_CENTER, modes[i]);
+                                }
+                                al_flip_display();
+                                al_wait_for_event(queue, &event);
+                                if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+                                    if (event.keyboard.keycode == ALLEGRO_KEY_UP || event.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+                                        mode_selected = 1 - mode_selected;
+                                    } else if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+                                        al_destroy_display(display);
+                                        return mode_selected; // 0 - normalny, 1 - nieskonczony
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        case 1: // Tabela wyników
+                            //wyswietl/_leaderboard(0);
+                            //wyswietl_leaderboard(1);
+                            break;
+                        case 2: // Autorzy
+                            al_clear_to_color(al_map_rgb(0, 0, 0));
+                            al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_W / 2, 50, ALLEGRO_ALIGN_CENTER, "Autorzy:");
+                            al_draw_bitmap(autor1, 100, 100, 0);
+                            al_draw_text(font, al_map_rgb(255, 255, 255), 100, 250, 0, "Wiktor Wieczorek");
+
+                            al_draw_bitmap(autor2, 300, 100, 0);
+                            al_draw_text(font, al_map_rgb(255, 255, 255), 300, 250, 0, "Hubert Wilczynski");
+
+                            al_draw_bitmap(autor3, 500, 100, 0);
+                            al_draw_text(font, al_map_rgb(255, 255, 255), 500, 250, 0, "Hubert Stojek");
+
+                            al_flip_display();
+                            al_rest(3.0); // Czekaj 3 sekundy
+                            break;
+                        case 3: // Wyjście
+                            al_destroy_display(display);
+                            return 2;
+                    }
+                    break;
+            }
+        }
+    }
+
+    // Cleanup
+    al_destroy_display(display);
+    al_destroy_event_queue(queue);
+    al_destroy_font(font);
+    al_destroy_bitmap(autor1);
+    al_destroy_bitmap(autor2);
+    al_destroy_bitmap(autor3);
+
+    return 2;
+}
+
+
+// Punkt wejścia aplikacji graficznej w Windows
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    return main_menu();
+}
