@@ -15,8 +15,8 @@ add_executable(pp2 main.c
         question_loading.c
         button.h
         button.c
-        temp.h
-        temp.c)
+        main_menu.h
+        main_menu.c)
 target_link_libraries(pp2
         allegro
         allegro_primitives

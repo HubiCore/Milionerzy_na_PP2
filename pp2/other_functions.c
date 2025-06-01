@@ -1,28 +1,35 @@
+/**
+ * @file other_functions.c
+ * @brief Obsługa leaderboardów: zapisywanie wyników, sortowanie i wyświetlanie.
+ */
+
 #include <string.h>
-#include <ctype.h> //toupper{
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h> //losowe liczby
 #include "other_functions.h"
 
-#define MAX_GRACZY 100
-#define MAX_NAZWA 50
-#define TOP_N 5
+#define MAX_GRACZY 100  ///< Maksymalna liczba graczy na leaderboardzie.
+#define MAX_NAZWA 50    ///< Maksymalna długość nazwy gracza.
+#define TOP_N 5         ///< Liczba graczy w top5.
 
-
-
-
-// Created by Hubi_Core on 5/3/25.
-
-
-
-// Funkcja porównująca do sortowania malejącego
+/**
+ * @brief Funkcja porównująca dwóch graczy według wyniku malejąco (do sortowania).
+ *
+ * @param a Wskaźnik na pierwszego gracza.
+ * @param b Wskaźnik na drugiego gracza.
+ * @return Różnica wyników: dodatnia jeśli b > a.
+ */
 int porownaj_graczy(const void* a, const void* b) {
     return ((Gracz*)b)->wynik - ((Gracz*)a)->wynik;
 }
 
-// Zapisz top 5 graczy do osobnego pliku
+/**
+ * @brief Zapisuje top 5 graczy do pliku, zależnie od trybu gry.
+ *
+ * @param gracze Tablica struktur Gracz.
+ * @param liczbaGraczy Liczba wszystkich graczy w tablicy.
+ * @param tryb Tryb gry: 0 - klasyczny, 1 - nieskończony.
+ */
 void zapisz_top5(Gracz gracze[], int liczbaGraczy, const int tryb) {
     string nazwaPliku;
 
@@ -45,7 +52,12 @@ void zapisz_top5(Gracz gracze[], int liczbaGraczy, const int tryb) {
 
     fclose(file);
 }
-//Funkcja wypisująca tablice wyników dla konkretnego trybu gry (klasyczny, nieskonczony)
+
+/**
+ * @brief Wyświetla zawartość leaderboardu z pliku odpowiedniego dla danego trybu.
+ *
+ * @param tryb Tryb gry: 0 - klasyczny, 1 - nieskończony.
+ */
 void wyswietl_leaderboard(int tryb) {
     string nazwaPliku;
 
@@ -72,13 +84,19 @@ void wyswietl_leaderboard(int tryb) {
 
     fclose(file);
 }
-//wszystko co ważne do leaderboardów (tworzenie leaderboard_klasyczny i nieskonczony i top5...)
 
+/**
+ * @brief Aktualizuje leaderboard: dodaje/edytuje wynik gracza i zapisuje top5.
+ *
+ * @param imie Imię gracza.
+ * @param wynik Uzyskany wynik.
+ * @param tryb Tryb gry: 0 - klasyczny, 1 - nieskończony.
+ * @return 0 jeśli sukces, 1 jeśli błąd.
+ */
 int leaderboard(const char* imie, int wynik, const int tryb) {
     string nazwaPliku;
 
-
-    if (tryb== 0) {
+    if (tryb == 0) {
         strcpy(nazwaPliku, "leaderboard_klasyczny.txt");
     } else if (tryb == 1) {
         strcpy(nazwaPliku, "leaderboard_nieskonczony.txt");
@@ -92,7 +110,6 @@ int leaderboard(const char* imie, int wynik, const int tryb) {
     int liczbaGraczy = 0;
     int znaleziono = 0;
 
-
     if (file != NULL) {
         while (fscanf(file, "%s %d", gracze[liczbaGraczy].nazwa, &gracze[liczbaGraczy].wynik) == 2) {
             liczbaGraczy++;
@@ -101,10 +118,11 @@ int leaderboard(const char* imie, int wynik, const int tryb) {
         fclose(file);
     }
 
-
     for (int i = 0; i < liczbaGraczy; i++) {
         if (strcmp(gracze[i].nazwa, imie) == 0) {
-            gracze[i].wynik += wynik;
+            if (wynik > gracze[i].wynik) {
+                gracze[i].wynik = wynik;
+            }
             znaleziono = 1;
             break;
         }
@@ -117,9 +135,7 @@ int leaderboard(const char* imie, int wynik, const int tryb) {
         liczbaGraczy++;
     }
 
-
     qsort(gracze, liczbaGraczy, sizeof(Gracz), porownaj_graczy);
-
 
     file = fopen(nazwaPliku, "w");
     if (file == NULL) {
@@ -133,50 +149,7 @@ int leaderboard(const char* imie, int wynik, const int tryb) {
 
     fclose(file);
 
-
     zapisz_top5(gracze, liczbaGraczy, tryb);
 
     return 0;
 }
-/*
-//glowne menu
-//zwraca 0 -> tryb normalny
-//zwraca 1 -> tryb nieskonczony
-//zwraca 2 -> wychodzisz z gry
-int main_menu(){
-    printf("1.Start\n");
-    printf("2.Tabela wynikow\n");
-    printf("3.Autorzy\n");
-    printf("4.Wyjscie\n");
-    while (1){
-        int odpowiedz, odpowiedz2;
-        scanf("%d", &odpowiedz);
-        switch(odpowiedz)
-        {
-            case 1:
-                printf("1.Normalny\n");
-            printf("2.Nieskonczony\n");
-            scanf("%d", &odpowiedz2);
-            if (odpowiedz2 == 1){
-                return 0;
-            }
-            else{
-                return 1;
-            }
-            break;
-            case 2:
-                printf("Tryb normalny:\n");
-            wyswietl_leaderboard(0);
-            printf("Tryb nieskonczony:\n");
-            wyswietl_leaderboard(1);
-            break;
-            case 3:
-                printf("Wiktor Wieczorek\nHubert Wilczynski\nHubert Stojek\n");
-            break;
-            case 4:
-                return 2;
-            break;
-        }
-    }
-}
-*/

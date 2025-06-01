@@ -1,22 +1,38 @@
-//
-// Created by Hubi_Core on 5/5/25.
-//
+/**
+* @file question_loading.h
+ * @brief Plik nagłówkowy do question_loading.c
+ */
 
 #ifndef QUESTION_LOADING_H
 #define QUESTION_LOADING_H
+/**
+ * @typedef string
+ * @brief Alias na tablicę znaków o długości 256 (ciąg tekstowy zakończony znakiem null).
+ */
 typedef char string[256];
-//struktura pytania (treść pytania, odpowiedzi i poprawna odpowiedź)
-typedef struct possibility{ //Treść pytania, 4 odpowiedzi, poprawna odpowiedź i czy pytanie się pojawiło
-    string question;
-    string answers[4];
-    char correctAnswer; //a, b, c lub d
+/**
+ * @struct possibility
+ * @brief Struktura reprezentująca jedno pytanie quizowe.
+ *
+ * Zawiera treść pytania, cztery możliwe odpowiedzi oraz oznaczenie poprawnej.
+ */
+typedef struct possibility {
+    string question;        /**< Treść pytania. */
+    string answers[4];      /**< Tablica czterech możliwych odpowiedzi (A–D). */
+    char correctAnswer;     /**< Poprawna odpowiedź — litera: 'A', 'B', 'C' lub 'D'. */
+} possibility;
 
 
-}possibility;
-//Bóg mi świadkiem, że ta lista to morderca studentów
+/**
+ * @struct Node
+ * @brief Węzeł cyklicznej listy jednokierunkowej przechowującej pytania.
+ *
+ * Każdy węzeł zawiera jedno pytanie typu `possibility` oraz wskaźnik na następny element listy.
+ * Bóg mi świadkiem, że ta lista to morderca studentów
+ */
 typedef struct Node {
-    possibility qac;
-    struct Node* next;
+    possibility qac;     /**< Dane pytania (question and choices). */
+    struct Node* next;   /**< Wskaźnik na kolejny węzeł w liście. */
 } Node;
 
 

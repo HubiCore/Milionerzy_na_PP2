@@ -84,8 +84,8 @@ build CMakeFiles/pp2.dir/button.c.obj: C_COMPILER__pp2_unscanned_Debug C$:/Users
   OBJECT_DIR = CMakeFiles\pp2.dir
   OBJECT_FILE_DIR = CMakeFiles\pp2.dir
 
-build CMakeFiles/pp2.dir/temp.c.obj: C_COMPILER__pp2_unscanned_Debug C$:/Users/Lenovo/pp2/temp.c || cmake_object_order_depends_target_pp2
-  DEP_FILE = CMakeFiles\pp2.dir\temp.c.obj.d
+build CMakeFiles/pp2.dir/main_menu.c.obj: C_COMPILER__pp2_unscanned_Debug C$:/Users/Lenovo/pp2/main_menu.c || cmake_object_order_depends_target_pp2
+  DEP_FILE = CMakeFiles\pp2.dir\main_menu.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   INCLUDES = -IC:/MinGW64/include
   OBJECT_DIR = CMakeFiles\pp2.dir
@@ -99,7 +99,7 @@ build CMakeFiles/pp2.dir/temp.c.obj: C_COMPILER__pp2_unscanned_Debug C$:/Users/L
 #############################################
 # Link the executable pp2.exe
 
-build pp2.exe: C_EXECUTABLE_LINKER__pp2_Debug CMakeFiles/pp2.dir/main.c.obj CMakeFiles/pp2.dir/kola_ratunkowe.c.obj CMakeFiles/pp2.dir/other_functions.c.obj CMakeFiles/pp2.dir/question_loading.c.obj CMakeFiles/pp2.dir/button.c.obj CMakeFiles/pp2.dir/temp.c.obj
+build pp2.exe: C_EXECUTABLE_LINKER__pp2_Debug CMakeFiles/pp2.dir/main.c.obj CMakeFiles/pp2.dir/kola_ratunkowe.c.obj CMakeFiles/pp2.dir/other_functions.c.obj CMakeFiles/pp2.dir/question_loading.c.obj CMakeFiles/pp2.dir/button.c.obj CMakeFiles/pp2.dir/main_menu.c.obj
   FLAGS = -g
   LINK_FLAGS = -mwindows
   LINK_LIBRARIES = -lallegro  -lallegro_primitives  -lallegro_font  -lallegro_ttf  -lallegro_image  -lallegro_audio  -lallegro_acodec  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32

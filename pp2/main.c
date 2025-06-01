@@ -1,3 +1,7 @@
+/**
+* @file main.c
+ * @brief Główny plik
+ */
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
@@ -12,10 +16,26 @@
 #include "button.h"
 #include "kola_ratunkowe.h"
 #include "other_functions.h"
-#include "temp.h"
+#include "main_menu.h"
+/**
+ * @brief Szerokość okna aplikacji (w pikselach).
+ */
 const int SCREEN_W = 1920;
+
+/**
+ * @brief Wysokość okna aplikacji (w pikselach).
+ */
 const int SCREEN_H = 1080;
+
+/**
+ * @brief Liczba klatek na sekundę (FPS).
+ */
 const float FPS = 60.0;
+
+/**
+ * @typedef string
+ * @brief Alias na tablicę znaków o długości 256 (ciąg tekstowy zakończony znakiem null).
+ */
 typedef char string[256];
 
 
@@ -33,7 +53,17 @@ int main() {
     ALLEGRO_DISPLAY* display = al_create_display(SCREEN_W, SCREEN_H);
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
-
+    ALLEGRO_BITMAP* tlo = al_load_bitmap("tlo_lepsze2.png");
+    ALLEGRO_BITMAP* icon = al_load_bitmap("icon.png");
+    if (!icon) {
+        fprintf(stderr, "Nie udało się załadować ikony!\n");
+        return -1;
+    }
+    al_set_display_icon(display, icon);
+    if (!tlo) {
+        fprintf(stderr, "Nie udało się załadować tła!\n");
+        return -1;
+    }
     ALLEGRO_FONT* font = al_load_ttf_font("DejaVuSans.ttf", 24, 0);
     if (!display) {
         fprintf(stderr, "Nie udało się stworzyć ekranu\n");
@@ -82,8 +112,7 @@ int main() {
         fprintf(stderr, "Nie udało się załadować dźwięku!\n");
     }
 
-
-    // rejestracja źródeł zdarzeń
+    //rzeczy do dźwięków
     al_register_event_source(queue, al_get_display_event_source(display));
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_mouse_event_source());
@@ -109,8 +138,10 @@ int main() {
     int odliczanie = 30;
     float countdown = 30.0f;
     char wrong_fifty;
-    bool no_idea = false; //to gówno jest potrzebne by dekrementacja tylko raz się wykonała
+    string ilosc_zyc_wypisz = "Ilość życ: ";
+    bool no_idea = false; //to g*wno jest potrzebne by dekrementacja tylko raz się wykonała
     string labels[3] = { "telefon do przyjaciela", "50/50", "pytanie do publiczności" };
+    bool wrong = false;
     for (int i = 0; i < 3; i++) {
         lifeline_buttons[i].x = 100 + i * 580;
         lifeline_buttons[i].y = 930;
@@ -128,6 +159,20 @@ int main() {
     snprintf(leave.label, sizeof(leave.label), "%s", "X");
     leave.active = true;
     skibidi_toilet = lets_go_gambling(head);
+    Button answer_buttons[4];
+    for (int i = 0; i < 4; i++) {
+        answer_buttons[i].x = 100;
+        answer_buttons[i].y = 600 + i * 80;
+        answer_buttons[i].w = SCREEN_W - 200;
+        answer_buttons[i].h = 60;
+        snprintf(answer_buttons[i].label, sizeof(answer_buttons[i].label), "%s", skibidi_toilet.answers[i]);
+        answer_buttons[i].active = true;
+        answer_buttons[i].hovered = false;
+    }
+
+
+    int bruh;
+    bool used = false;
     while (running) {
 
             ALLEGRO_EVENT ev;
@@ -135,6 +180,15 @@ int main() {
             if (ev.type == ALLEGRO_EVENT_TIMER) {
 
                 if (show_phone) {
+                    if (used == false) {
+                        bruh = question_count;
+                        used = true;
+                    }
+                    if (bruh != question_count) {
+                        show_phone = false;
+                        odliczanie = 0;
+                        used = false;
+                    }
                     if (countdown > 0.0f) {
                         countdown -= 1.0f / FPS;
                     }
@@ -148,11 +202,12 @@ int main() {
                         if (odliczanie <= 0) {
                             show_phone = false;
                             odliczanie = 0;
+                            used = false;
 
                         }
                     }
                 }
-                // po udzieleniu odpowiedzi pokazujemy feedback 2 sekundy
+                // po udzieleniu odpowiedzi pokazujemy odpowiedz poprawna na 2 sekundy
                 if (answered) {
                     feedback_time++;
 
@@ -160,7 +215,7 @@ int main() {
                         if (zycia == 0 || (question_count == 13 && m_m == 0)) {
                             leaderboard(imie,question_count, m_m);
                             printf("Dokonano");
-                            to_jest_koniec(queue,font,question_count);
+                            to_jest_koniec(queue,font,question_count, m_m);
                             al_destroy_font(font);
                             al_destroy_timer(timer);
                             al_destroy_event_queue(queue);
@@ -171,13 +226,28 @@ int main() {
                         else {
                             // Przejdź do kolejnego pytania
                             skibidi_toilet = lets_go_gambling(head); // nowe pytanie
+                            for (int i = 0; i < 4; i++) {
+                                answer_buttons[i].x = 100;
+                                answer_buttons[i].y = 600 + i * 80;
+                                answer_buttons[i].w = SCREEN_W - 200;
+                                answer_buttons[i].h = 60;
+                                snprintf(answer_buttons[i].label, sizeof(answer_buttons[i].label), "%s", skibidi_toilet.answers[i]);
+                                answer_buttons[i].active = true;
+                                answer_buttons[i].hovered = false;
+                            }
+
                             answered = false;
                             selected = -1;
                             feedback_time = 0;
                             show_fifty_fifty = false;
                             show_audience_votes = false;
                             no_idea = false;
-                            question_count++;
+                            if (wrong == false) {
+                                question_count++;
+                            }
+                            else {
+                                wrong = false;
+                            }
                             for (int i = 0; i < 4; i++) audience_votes[i] = 0;
                         }
                     }
@@ -185,78 +255,30 @@ int main() {
 
 
                 // rysowanie
-                al_clear_to_color(al_map_rgb(30, 30, 60));//kolor tl
-                //ALLEGRO_COLOR col = (i == selected)
-                //        ? al_map_rgb(200,200,50)
-                //        : al_map_rgb(80,80,120);
+                al_draw_bitmap(tlo, 0, 0, 0);
+
+                //al_clear_to_color(al_map_rgb(30, 30, 60));//kolor tl
                 for (int i = 0; i < 3; i++) {
                     draw_button(lifeline_buttons[i], font);
                 }
-                /*
-                string labels[3] = {
-                    "telefon do przyjaciela",
-                    "50/50",
-                    "pytanie do publiczności"
-                };
 
-                for (int i = 0; i < 3; i++) {
-                    float x = 100 + i * 580; // Zmieniamy współrzędną X
-                    float w = 560;  // Szerokość kwadratu
-                    float h = 50;  // Wysokość kwadratu (również 50, aby był kwadratem)
-                    al_draw_filled_rectangle(x, 930, x + w, 950 + h, al_map_rgb(80,80,120)); // Czerwony kolor
-                    al_draw_text(font, al_map_rgb(255,255,255), x + w / 2, 940 + h / 2 - al_get_font_line_height(font) / 2, ALLEGRO_ALIGN_CENTRE, labels[i]);
-                }
-                */
-                draw_button(leave, font);
+                draw_button_color(leave, font, al_map_rgb(80, 0, 0), al_map_rgb(255, 100, 100), al_map_rgb(160, 0, 0), al_map_rgb(100, 0, 0), al_map_rgb(255, 255, 255));
                 // pytanie
                 string tekst ="";
                 snprintf(tekst, sizeof(tekst), "Pytanie nr %d: %s", question_count, skibidi_toilet.question);
                 al_draw_text(font, al_map_rgb(255,255,255),
                              SCREEN_W/2, 50, ALLEGRO_ALIGN_CENTRE, tekst);
-                // odpowiedzi
+                snprintf(ilosc_zyc_wypisz, sizeof(ilosc_zyc_wypisz), "Zostało żyć: %d", zycia);
+                al_draw_text(font, al_map_rgb(255,255,255),
+                             200, 100, ALLEGRO_ALIGN_CENTRE, ilosc_zyc_wypisz);
+
                 for (int i = 0; i < 4; i++) {
-                    float x = 100;
-                    float y = 600 + i * 80;
-                    float w = SCREEN_W - 200;
-                    float h = 60;
-
-                    // kolor ramki / wypełnienia
-                    ALLEGRO_COLOR col = (i == selected)
-                        ? al_map_rgb(200,200,50)
-                        : al_map_rgb(80,80,120);
-                    al_draw_filled_rectangle(x, y, x+w, y+h, col);
-
-                    // jeśli już odpowiedziano, podświetl prawidłową / błędną
-                    if (answered) {
-                        int correctIndex = skibidi_toilet.correctAnswer - 'A'; //znaki na liczbe
-                        printf("%d\n", correctIndex);
-                        if (i == correctIndex) {
-                            al_draw_rectangle(x, y, x + w, y + h, al_map_rgb(0, 200, 0), 4); // zielony
-                        } else if (i == selected && selected != correctIndex) {
-                            al_draw_rectangle(x, y, x + w, y + h, al_map_rgb(200, 0, 0), 4); // czerwony
-                        }
-                        if (correctIndex != selected && no_idea == false) {
-                            zycia--;
-                            no_idea = true;
-
-                        }
-                    }
-                    bool visible = true;
                     if (show_fifty_fifty) {
                         int correctIndex = skibidi_toilet.correctAnswer - 'A';
                         int badIndex = wrong_fifty - 'A';
-                        visible = (i == correctIndex || i == badIndex);
-                    }
-                    if (show_audience_votes) {
-                        if (visible) {
-                            char vote_text[16];
-                            sprintf(vote_text, "%d%%", audience_votes[i]);
-                            al_draw_text(font,
-                                         al_map_rgb(255, 255, 255),
-                                         x + w - 70,
-                                         y + 17,
-                                         0, vote_text);
-                        }
+                        answer_buttons[i].active = (i == correctIndex || i == badIndex);
+                    } else {
+                        answer_buttons[i].active = true;
                     }
                     if (show_phone) {
                         char buffer[64];
@@ -268,18 +290,45 @@ int main() {
                         al_draw_text(font, al_map_rgb(255, 255, 255), 1700, 500, ALLEGRO_ALIGN_CENTRE, buffer);
 
                     }
-                    if (visible) {
-                        // numer odpowiedzi (A, B, C, D)
-                        char buf[8];
-                        //snprintf(buf, sizeof(buf), "%c.", 'A' + i);
+                    if (answer_buttons[i].active) {
+                        if (answered) {
+                            int correctIndex = skibidi_toilet.correctAnswer - 'A';
+                            if (i == correctIndex) {
+                                draw_button_color_not_centered(answer_buttons[i], font, //correct
+                                                  al_map_rgb(0, 200, 0),
+                                                  al_map_rgb(0, 255, 0),
+                                                  al_map_rgb(0, 160, 0),
+                                                  al_map_rgb(0, 100, 0),
+                                                  al_map_rgb(255, 255, 255));
+                            } else if (i == selected && selected != correctIndex) { //wrong
+                                draw_button_color_not_centered(answer_buttons[i], font,
+                                                  al_map_rgb(200, 0, 0),
+                                                  al_map_rgb(255, 0, 0),
+                                                  al_map_rgb(160, 0, 0),
+                                                  al_map_rgb(100, 0, 0),
+                                                  al_map_rgb(255, 255, 255));
+                                if (no_idea == false) {
+                                    zycia--;
+                                    wrong = true;
+                                    no_idea = true;}
+                            } else {
+                                draw_button_not_centered(answer_buttons[i], font);
+                            }
+                        } else {
+                            draw_button_not_centered(answer_buttons[i], font);
+                        }
 
-                        //al_draw_text(font, al_map_rgb(255,255,255), x + 10, y + 15, 0, buf);
-
-                        // tekst odpowiedzi
-                        al_draw_text(font, al_map_rgb(255,255,255),
-                                     x + 15, y + 15, 0, skibidi_toilet.answers[i]);
+                        // dodaj % głosów jeśli trzeba
+                        if (show_audience_votes) {
+                            char vote_text[16];
+                            sprintf(vote_text, "%d%%", audience_votes[i]);
+                            al_draw_text(font, al_map_rgb(255, 255, 255),
+                                         answer_buttons[i].x + answer_buttons[i].w - 70,
+                                         answer_buttons[i].y + 17, 0, vote_text);
+                        }
                     }
                 }
+
 
                 al_flip_display();
             }
@@ -305,13 +354,12 @@ int main() {
                     return 0;
                 }
                 for (int i = 0; i < 4; i++) {
-                    float x = 100, y = 600 + i * 80;
-                    float w = SCREEN_W - 200, h = 60;
-                    if (mx >= x && mx <= x+w && my >= y && my <= y+h) {
+                    if (answer_buttons[i].active && is_button_clicked(answer_buttons[i], mx, my)) {
                         selected = i;
                         answered = true;
                     }
                 }
+
                 for (int i = 0; i < 3; i++) {
                     if (is_button_clicked(lifeline_buttons[i], mx, my)) {
                         printf("Kliknięto: %s\n", lifeline_buttons[i].label);
@@ -346,6 +394,14 @@ int main() {
                         my >= lifeline_buttons[i].y &&
                         my <= lifeline_buttons[i].y + lifeline_buttons[i].h;
                 }
+                for (int i = 0; i < 4; i++) {
+                    answer_buttons[i].hovered = answer_buttons[i].active &&
+                        mx >= answer_buttons[i].x &&
+                        mx <= answer_buttons[i].x + answer_buttons[i].w &&
+                        my >= answer_buttons[i].y &&
+                        my <= answer_buttons[i].y + answer_buttons[i].h;
+                }
+
             }
         }
 

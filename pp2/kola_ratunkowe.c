@@ -1,19 +1,36 @@
+/**
+* @file kola_ratunkowe.c
+ * @brief Implementacja kół ratunkowych w grze (50:50, telefon do przyjaciela, pytanie do publiczności).
+ *
+ * Funkcje pomocnicze używane w quizie typu "Milionerzy".
+ */
+
 #include "kola_ratunkowe.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h> //losowe liczby
-#include <stdbool.h> //bool
+#include <time.h>
 #include <string.h>
-#include <ctype.h> //toupper
+#include <ctype.h>
 #include <unistd.h>
-//typedef char string[256];
 
-//usuwaie buffera
+/**
+ * @brief Czyści bufor wejściowy standardowego wejścia.
+ *
+ * Pomocne przy oczekiwaniu na znak Enter w konsoli, aby uniknąć zalegających znaków.
+ */
+
 void clear_input_buffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
-//kolo ratunkowe 50 na 50, funkcja wypisuje wypisuje jedno poprawne pytanie i jego złe pytanie
+
+/**
+ * @brief Koło ratunkowe 50 na 50 — pozostawia jedną poprawną i jedną losową złą odpowiedź.
+ *
+ * @param correctAnswer Litera oznaczająca poprawną odpowiedź (np. 'A').
+ * @param answers Tablica 4 możliwych odpowiedzi w formacie np. "A) Odpowiedź".
+ * @return Litera pozostawionej błędnej odpowiedzi.
+ */
 char fiftyFifty(char correctAnswer, string answers[4]) {
     int wrongIndices[3];
     int wrongCount = 0;
@@ -25,17 +42,13 @@ char fiftyFifty(char correctAnswer, string answers[4]) {
     }
     srand(time(NULL));
     int keepWrongIndex = wrongIndices[rand() % wrongCount];
-    /*
-    printf("Pozostaja odpowiedzi:\n");
-    for (int i = 0; i < 4; i++) {
-        if (answers[i][0] == correctAnswer || i == keepWrongIndex) {
-            printf("%s", answers[i]);
-        }
-    }
-    */
     return answers[keepWrongIndex][0];
 }
-//telefon do przyjaciela, klikasz, dzwonisz do przyjaciela, mówisz zasady, jak wie o co chodzi klikasz enter, koniec czasu to się rozłączasz
+/**
+ * @brief Koło ratunkowe „Telefon do przyjaciela” — wyświetla licznik 30 sekund.
+ *
+ * Funkcja odlicza czas, żeby gracz wiedział, ile ma czasu na dzwonienie z kolegą (poleganie na uczciwości gracza)
+ */
 void call_to_friend(){
     clear_input_buffer();
     printf("Nacisnij Enter, aby rozpoczac odliczanie 30 sekund...\n");
@@ -51,7 +64,16 @@ void call_to_friend(){
     printf("\nKoniec czasu!\n");
 
 }
-//kolo ratunkowe pytanie do publiczności, funkcja zwraca wyniki procentowe, szansa 1 na 100, ze poprawna odpowiedz jest rowna 0
+
+/**
+ * @brief Koło ratunkowe „Pytanie do publiczności” — generuje losowy rozkład procentowy odpowiedzi.
+ *
+ * @param correctAnswer Litera poprawnej odpowiedzi (np. 'C').
+ * @param answers Tablica 4 możliwych odpowiedzi (z literą na początku).
+ * @param question Treść pytania (obecnie niewykorzystywana wewnątrz funkcji).
+ * @param buf Tablica, w której zapisywane są procentowe głosy publiczności (buf[0] -> A, buf[1] -> B itd.).
+ */
+
 void PytanieDoPublicznosci(char correctAnswer, string answers[4], string question, int buf[4]) {
     int sum = 100, temp;
     int votes[4] = {0,0,0,0};
@@ -80,12 +102,4 @@ void PytanieDoPublicznosci(char correctAnswer, string answers[4], string questio
             j++;
         }
     }
-    /*
-    printf("%s\n",question);
-    printf("%s -> %d%% \n",answers[0], votes[0]);
-    printf("%s -> %d%% \n",answers[1], votes[1]);
-    printf("%s -> %d%% \n",answers[2], votes[2]);
-    printf("%s -> %d%% \n",answers[3], votes[3]);
-    */
-
 }
